@@ -2,7 +2,7 @@
 <html>
 <head>
 	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1 minimim-scale=1">
 	<link rel="shortcut icon" href="img/favicon.ico">
 	<!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
 	<!--[if lt IE 9]>
@@ -73,7 +73,11 @@
 						</form>
 					</div>
 					<div class="span8">
-						<div id="theMap" style="width:640px; height:640px;"></div>
+						<div style="display:inline-block; position:relative; width:100%;">
+							<div style="margin-top:75%;">
+								<div id="theMap" style="position:absolute; top:0; bottom:0; left:0;right:0;"></div>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
