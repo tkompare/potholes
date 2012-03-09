@@ -315,10 +315,10 @@ $(document).ready(function() {
 				cpr.flot[cpr.i] = [cpr.i,cpr.total[cpr.i]];
 			}
 			$("#statResults").fadeOut(function() {
-				$("#statResults").html('<div class="alert alert-info"><strong>' + cpr.openComplete + '<br/>' + roundNum(cpr.statResults.min,0) + '</strong> minimum<br/><strong>' + roundNum(cpr.statResults.max,0) + '</strong> maximum<br/><strong>' + roundNum(cpr.statResults.mean,1) + '</strong> average<br/><strong>' + roundNum(cpr.statResults.median,1) + '</strong> median<br/><strong>' + roundNum(cpr.statResults.stdev,1) + '</strong> standard deviation<div id="flot" style="width:240px;height:100px"></div><p>&nbsp;<br/>requests - vertical&nbsp;&nbsp;|&nbsp;&nbsp;days - horizonal</p></div>');
-				$.plot($("#flot"), [{ color:"rgba(255,0,0,0.66)", data:cpr.flot}],
+				$("#statResults").html('<div class="alert alert-info"><strong>' + cpr.openComplete + '<br/>' + roundNum(cpr.statResults.min,0) + '</strong> minimum<br/><strong>' + roundNum(cpr.statResults.max,0) + '</strong> maximum<br/><strong>' + roundNum(cpr.statResults.mean,0) + '</strong> average<br/><strong>' + roundNum(cpr.statResults.median,0) + '</strong> median<br/><strong>' + roundNum(cpr.statResults.stdev,0) + '</strong> standard deviation<div id="flot" style="width:240px;height:100px"></div><p>&nbsp;<br/>requests - vertical&nbsp;&nbsp;|&nbsp;&nbsp;days - horizonal</p></div>');
+				$.plot($("#flot"), [{ color:"rgba(255,50,50,0.66)", data:cpr.flot}],
 							{
-								bars: { show:true, fillColor:"rgba(255,0,0,0.25)" },
+								bars: { show:true, fillColor:"rgba(255,50,50,0.25)" },
 								xaxis: {
 									ticks: [[1,"0"],[2,"3"],[3,"6"],[4,"9"],[5,"12"],[6,"15"],[7,"&#x221E;"]]
 								}
