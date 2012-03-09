@@ -238,17 +238,17 @@ $(document).ready(function() {
 			$("#numResults").fadeOut(function() {
 				$("#numResults").html('<div class="alert"><strong>Calculating...</strong></div>');
 			});
-			$("#numResults").fadeIn();
-			cpr.countQueryString = queryString.replace("SELECT " + cpr.potholeColumn,
-					"SELECT Count() ");
-			getFTQuery(cpr.countQueryString).send(displaySearchCount);
-			if(cpr.isStatsRequest && cpr.isAddressRequest)
-			{
-				displayStatistics(queryString);
-			}
+			$("#numResults").fadeIn(function() {
+				cpr.countQueryString = queryString.replace("SELECT " + cpr.potholeColumn, "SELECT Count() ");
+				getFTQuery(cpr.countQueryString).send(displaySearchCount);
+				if(cpr.isStatsRequest)
+				{
+					displayStatistics(queryString);
+				}
+			});
 		}
 		/**
-		 * Get the COUNT of the pothole requests
+		 * Do a call to Google Visualization API
 		 */
 		function getFTQuery(sql) {
 			cpr.queryText = encodeURIComponent(sql);
@@ -274,25 +274,38 @@ $(document).ready(function() {
 		function displayStatistics(queryString)
 		{
 			cpr.statQueryString = queryString.replace("SELECT " + cpr.potholeColumn, "SELECT CREATIONDATE, COMPLETIONDATE");
-			getFTQuery(cpr.statQueryString).send(processStatistics);
+			//getFTQuery(cpr.statQueryString).send(processStatistics);
+			cpr.queryText = encodeURIComponent(cpr.statQueryString);
+			cpr.jqxhr = $.get('http://www.google.com/fusiontables/api/query?sql='+cpr.queryText+'&jsonCallback=?', ftDataHandler, 'jsonp');
+		}
+		/**
+		 * Handle the Google Data API request
+		 */
+		function ftDataHandler(d) {
+			processStatistics(d.table.rows);
 		}
 		/**
 		 * Create and display the statistics
 		 */
 		function processStatistics(response)
 		{
-			cpr.numStatsRows = parseInt(response.getDataTable().getNumberOfRows());
+			cpr.dateDiffs = new Array();
+			cpr.numStatsRows = parseInt(response.length);
+			// Set the six ranges value to 0
 			for(cpr.i=1;cpr.i<=6;cpr.i++)
 			{
 				cpr.total[cpr.i] = 0;
 			}
-
 			for (cpr.i=0;cpr.i<cpr.numStatsRows;cpr.i++)
 			{
-				cpr.createDates[cpr.i] = new XDate(response.getDataTable().getValue(cpr.i,0));
-				cpr.completeDates[cpr.i] = new XDate(response.getDataTable().getValue(cpr.i,1));
-				cpr.openComplete = 'DAYS TO COMPLETE REQUESTS';
-				if (cpr.completeDates[cpr.i] == '21600000')
+				
+				cpr.createDates[cpr.i] = new XDate(response[cpr.i][0]);
+				if (response[cpr.i][1] != '')
+				{
+					cpr.openComplete = 'DAYS TO COMPLETE REQUESTS';
+					cpr.completeDates[cpr.i] = new XDate(response[cpr.i][1]);
+				}
+				else
 				{
 					cpr.openComplete = 'DAYS SINCE REQUESTS OPENED';
 					cpr.completeDates[cpr.i] = new XDate();
