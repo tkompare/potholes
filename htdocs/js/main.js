@@ -8,6 +8,7 @@ $(document).ready(function() {
 		* Set up various variables
 		*/
 		var cpr = {}; // The local master object: cpr: (C)hicago (P)othole (R)epair
+		cpr.dataDate = '2012-03-10'; // Date of last data upload
 		cpr.mapDOM = document.getElementById('theMap'); // the DOM object (div) in which to place the Google Map.
 		cpr.CenterLatLng = new google.maps.LatLng('41.845', '-87.669'); //initial center of the map
 		cpr.potholeLayer = null; // the pothole data map layer
@@ -308,7 +309,7 @@ $(document).ready(function() {
 				else
 				{
 					cpr.openComplete = 'DAYS SINCE REQUESTS OPENED';
-					cpr.completeDates[cpr.i] = new XDate();
+					cpr.completeDates[cpr.i] = new XDate(cpr.dataDate);
 				}
 				cpr.dateDiffs[cpr.i] = cpr.createDates[cpr.i].diffDays(cpr.completeDates[cpr.i]);
 				if(cpr.dateDiffs[cpr.i] < 3) { cpr.total[1]++; }
