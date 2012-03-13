@@ -8,7 +8,7 @@ $(document).ready(function() {
 		* Set up various variables
 		*/
 		var cpr = {}; // The local master object: cpr: (C)hicago (P)othole (R)epair
-		cpr.dataDate = '2012-03-10'; // Date of last data upload
+		cpr.dataDate = '2012-03-12'; // Date of last data upload
 		cpr.mapDOM = document.getElementById('theMap'); // the DOM object (div) in which to place the Google Map.
 		cpr.CenterLatLng = new google.maps.LatLng('41.845', '-87.669'); //initial center of the map
 		cpr.potholeLayer = null; // the pothole data map layer
