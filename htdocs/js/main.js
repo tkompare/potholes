@@ -1,366 +1,218 @@
-google.load('visualization', '1', {});
 $(document).ready(function() {
-		/*
-		 * Address Help tool-tip
-		 */
-		$('#help-address').tooltip();
-		/*
-		* Set up various variables
-		*/
-		var cpr = {}; // The local master object: cpr: (C)hicago (P)othole (R)epair
-		cpr.dataDate = '2012-03-12'; // Date of last data upload
-		cpr.mapDOM = document.getElementById('theMap'); // the DOM object (div) in which to place the Google Map.
-		cpr.CenterLatLng = new google.maps.LatLng('41.845', '-87.669'); //initial center of the map
-		cpr.potholeLayer = null; // the pothole data map layer
-		cpr.potholeTableId = '3142020'; // the Google Fusion Table ID for pothole data
-		cpr.potholeColumn = 'LOCATION'; // the Fusion Table column than holds the pothole location data
-		cpr.wardLayer = null; // The Ward boundary map layer
-		cpr.wardTableId = '3057562'; // The Google Fusion Table ID for Ward Boundary data
-		cpr.wardColumn = 'geometry'; // The Fusion Table column that holds the Ward location data
-		cpr.queryString = null; // The pothole data query string
-		cpr.countQueryString = null; // The pothole data selection count
-		cpr.insertAnd = ''; // set to 'AND' if the cpr.queryString needs an AND clause
-		cpr.geocoder = new google.maps.Geocoder(); // Google Maps geocoder object.
-		cpr.searchRadius = '805'; // Search radius for address-based search.
-		cpr.addrMarker = false; // Google Maps marker object.
-		cpr.isStatsRequest = false; // 'true' if we we need stats
-		cpr.isAddressRequest = false; // 'true' if use filled out address.
-		cpr.createDates = new Array(); // pothole create dates.
-		cpr.completeDates = new Array(); // pothole completeion dates
-		cpr.dateDiffs = new Array(); // difference between create and completion dates.
-		cpr.total = new Array(); // holds the count of pothole requests for bar graph.
-		cpr.flot = new Array(); // the data to send to the bar graph
-		cpr.openComplete = null; // used in title of bar graph div
-		cpr.i = null; // iterator
-		cpr.statResults = {}; // stats results object
-		cpr.queryText = null; // query text used for stats
-		cpr.numRows = null; // number of rows returned
-		cpr.subStr = null; // used to insert commas in numbers
-		cpr.subStr1 = null; // used to insert commas in numbers
-		cpr.subStr2 = null; // used to insert commas in numbers
-		cpr.regex = null; // used to insert commas in numbers
-		cpr.myOptions = {
+	//google.load('visualization', '1', {});
+	/**
+	 * The [C]hicago [P]othole [R]epair object
+	 */
+	var cpr = {
+		/* ===== PROPERTIES ============================= */
+		// Map properties
+		mapDOM : document.getElementById('theMap'), // the DOM object (div) in which to place the Google Map.
+		mapCenter : new google.maps.LatLng('41.845', '-87.669'), //initial center of the map
+		mapOptions : {
 			zoom : 11,
 			mapTypeControl : true,
+			mapTypeId : google.maps.MapTypeId.TERRAIN,
 			streetViewControl : false,
 			panControl : false,
 			zoomControl : true,
 			zoomControlOptions : {
 				style : google.maps.ZoomControlStyle.SMALL,
 				position : google.maps.ControlPosition.LEFT_TOP
-			},
-			mapTypeId : google.maps.MapTypeId.TERRAIN
-		}; // Google Map settings
-		cpr.radiusCircle = null; // The radius circle object for the map
-		cpr.radiusCircleOptions = null; // The radius circle's appearance
-		/*
-		 * Make the base map
+			}
+		},
+		// Pot hole properties
+		potholeDataURL : 'http://data.cityofchicago.org/api/views/ktq5-qe3d/rows.json?jsonp=?',
+		potholeMarkers : Array(),
+		potholeInfo : Array(),
+		potholeData : null,
+		// Ward layer properties
+		wardLayer : null, // The Ward boundary map layer
+		wardTableId : '3057562', // The Google Fusion Table ID for Ward Boundary data
+		wardColumn : 'geometry', // The Fusion Table column that holds the Ward location data
+		theAddress : false,
+		geocoder : new google.maps.Geocoder(),
+		addrMarker : false,
+		/* ===== METHODS =================================== */
+		/**
+		 * Add commas into numbers
 		 */
-		cpr.theMap = new google.maps.Map(cpr.mapDOM, cpr.myOptions); // The Google Map object
-		cpr.theMap.setCenter(cpr.CenterLatLng);
-		/* 
-		 * Add the pothole Data Layer.
-		 */
-		function setQueryString() {
-			cpr.isStatsRequest = false;
-			cpr.queryString = "SELECT " + cpr.potholeColumn + " FROM " + cpr.potholeTableId;
-		}
-		setQueryString();
-		cpr.potholeLayer = new google.maps.FusionTablesLayer(cpr.potholeTableId, {
-			query : cpr.queryString
-		});
-		cpr.potholeLayer.setMap(cpr.theMap);
-		displayCount(cpr.queryString,false);
-		/*
-		 * pothole Data Listeners
-		 */
-		$("#map-refresh").click(function() {
-			cpr.yearCreation = $("#year-creation").val();
-			cpr.yearCompleted = $("#year-completed").val();
-			cpr.address = $("#address").val();
-			if (cpr.yearCreation == 'none' || cpr.yearCompleted == 'none')
+		addCommas : function(theStr) {
+			theStr += '';
+			subStr = theStr.split('.');
+			subStr1 = subStr[0];
+			subStr2 = subStr.length > 1 ? '.' + subStr[1] : '';
+			regx = /(\d+)(\d{3})/;
+			while (regx.test(subStr1))
 			{
-				$("#yearWarn").html('<div class="alert alert-error alert-block"><a class="close" data-dismiss="alert">x</a>Choose both a Request and Completion year.</div>');
+				subStr1 = subStr1.replace(regx, '$1' + ',' + '$2');
 			}
-			else
-			{
-				setQueryString();
-				if (cpr.yearCreation != 'all' || cpr.yearCompleted != 'all')
-				{
-					cpr.queryString = cpr.queryString + " WHERE " + cpr.potholeColumn + " NOT EQUAL TO '' AND";
-					if (cpr.yearCreation != 'all')
-					{
-						cpr.queryString = cpr.queryString + " CREATIONDATE >= '01/01/" + cpr.yearCreation + "' AND CREATIONDATE <= '12/31/" + cpr.yearCreation + "'";
-						cpr.insertAnd = ' AND';
-					}
-					if (cpr.yearCompleted != 'open' && cpr.yearCompleted != 'all')
-					{
-						cpr.isStatsRequest = true;
-						cpr.queryString = cpr.queryString + cpr.insertAnd + " COMPLETIONDATE >= '01/01/" + cpr.yearCompleted + "' AND COMPLETIONDATE <= '12/31/" + cpr.yearCompleted + "'";
-					}
-					if (cpr.yearCompleted == 'open')
-					{
-						cpr.isStatsRequest = true;
-						cpr.queryString = cpr.queryString + cpr.insertAnd + " STATUS LIKE '%Open%'";
-					}
-					if (cpr.yearCompleted == 'all')
-					{
-						cpr.isStatsRequest = true;
-						cpr.queryString = cpr.queryString + cpr.insertAnd + " STATUS LIKE '%Completed%'";
-					}
-				}
-				else
-				{
-					cpr.isStatsRequest = true;
-					cpr.queryString = cpr.queryString + " WHERE STATUS LIKE '%Completed%' AND " + cpr.potholeColumn + " NOT EQUAL TO ''";
-				}
-				if (cpr.address != '')
-				{
-					cpr.isAddressRequest = true; 
-					cpr.address += ' Chicago IL';
-					cpr.geocoder.geocode({'address': cpr.address}, function(results, status)
-					{
-						if (status == google.maps.GeocoderStatus.OK)
-						{
-							if(cpr.addrMarker != false)
-							{
-								cpr.addrMarker.setMap(null);
-							}
-							cpr.theMap.setCenter(results[0].geometry.location);
-							cpr.theMap.setZoom(14);
-							cpr.addrMarker = new google.maps.Marker({
-								position: results[0].geometry.location,
-								map: cpr.theMap,
-								animation: google.maps.Animation.DROP,
-								title:cpr.address
-							});
-							if(cpr.radiusCircle != null)
-							{
-								cpr.radiusCircle.setMap(null);
-							}
-							drawSearchRadiusCircle(results[0].geometry.location);
-							cpr.queryString = cpr.queryString + " AND ST_INTERSECTS(" + cpr.potholeColumn + ", CIRCLE(LATLNG" + results[0].geometry.location.toString() + "," + cpr.searchRadius + "))";
-							resetMap(cpr.queryString);
-						}
-						else
-						{
-							alert("We could not locate your address: " + status);
-						}
-					});
-				}
-				else
-				{
-					if(cpr.addrMarker != false)
-					{
-						cpr.addrMarker.setMap(null);
-					}
-					if(cpr.radiusCircle != null)
-					{
-						cpr.radiusCircle.setMap(null);
-					}
-					cpr.isAddressRequest = false;
-					$("#statResults").fadeOut(function() { $("#statResults").html('');});
-					resetMap(cpr.queryString);
-				}
-			}
-		});
+			return subStr1 + subStr2;
+		},
 		/**
-		 * Draw the 1/2 mile radius on the map
+		 * Display the pot hole Count
 		 */
-		function drawSearchRadiusCircle(theLocation) {
-			cpr.radiusCircleOptions = {
-				strokeColor: "#a0522d",
-				strokeOpacity: 0.4,
-				strokeWeight: 1,
-				fillColor: "#a0522d",
-				fillOpacity: 0.05,
-				map: cpr.theMap,
-				center: theLocation,
-				clickable: false,
-				zIndex: -1,
-				radius: parseInt(cpr.searchRadius)
-			};
-			cpr.radiusCircle = new google.maps.Circle(cpr.radiusCircleOptions);
-		}
-		/**
-		 * Reset the map back to show all pothole data
-		 */
-		$("#map-all").click(function() {
-			setQueryString();
-			if(cpr.addrMarker != false)
-			{
-				cpr.addrMarker.setMap(null);
-			}
-			if(cpr.radiusCircle != null)
-			{
-				cpr.radiusCircle.setMap(null);
-			}
-			resetMap(cpr.queryString);
-			$("#year-creation").val('none');
-			$("#year-completed").val('none');
-			$("#address").val('');
-			$("#statResults").fadeOut(function() { $("#statResults").html('');});
-		});
-		/**
-		 * Reload the pothole map data based on new query string
-		 */
-		function resetMap(queryString)
-		{
-			cpr.potholeLayer.setMap(null);
-			cpr.potholeLayer = new google.maps.FusionTablesLayer(
-					cpr.potholeTableId, {
-						query : queryString
-					});
-			cpr.potholeLayer.setMap(cpr.theMap);
-			displayCount(queryString);
-		}
-		/**
-		 * Get the Ward Layer
-		 */
-		cpr.wardLayer = new google.maps.FusionTablesLayer(cpr.wardTableId, {
-			query : "SELECT " + cpr.wardColumn + " FROM " + cpr.wardTableId
-		});
-		/**
-		 * Ward Layer Event Listener
-		 */
-		$("#wards").click(function() {
-			if ($("#wards").is(':checked')) {
-				cpr.potholeLayer.setMap(null);
-				cpr.wardLayer.setMap(cpr.theMap);
-				cpr.potholeLayer.setMap(cpr.theMap);
-			} else {
-				cpr.wardLayer.setMap(null);
-			}
-		});
-		/**
-		 * Getting pothole Count
-		 */
-		function displayCount(queryString) {
+		displayCount : function(rows) {
 			$("#numResults").fadeOut(function() {
 				$("#numResults").html('<div class="alert"><strong>Calculating...</strong></div>');
 			});
 			$("#numResults").fadeIn(function() {
-				cpr.countQueryString = queryString.replace("SELECT " + cpr.potholeColumn, "SELECT Count() ");
-				getFTQuery(cpr.countQueryString).send(displaySearchCount);
-				if(cpr.isStatsRequest)
-				{
-					displayStatistics(queryString);
-				}
+				$("#numResults").html('<div class="alert alert-info"><strong>'+cpr.addCommas(rows)+' Open Requests</strong></div>');
 			});
-		}
+		},
 		/**
-		 * Do a call to Google Visualization API
+		 * Factory method to open info boxes
+		 * @param theMap
+		 * @param theMarker
+		 * @param theInfoWindow
+		 * @returns {Function}
 		 */
-		function getFTQuery(sql) {
-			cpr.queryText = encodeURIComponent(sql);
-			return new google.visualization.Query('http://www.google.com/fusiontables/gvizdata?tq=' + cpr.queryText);
-		}
+		openInfoBox : function(theMap,theMarker,theInfoBox) {
+			return function() { theInfoBox.open(theMap,theMarker); };
+		},
 		/**
-		 * Display the COUNT of the potholes in the results DOM div
+		 * This pot hole data handler
+		 * @param potholeData
 		 */
-		function displaySearchCount(response) {
-			cpr.numRows = 0;
-			if (response.getDataTable().getNumberOfRows() > 0) {
-				cpr.numRows = parseInt(response.getDataTable().getValue(0, 0));
+		potholeDataHandler : function(dataParam) {
+			if (dataParam == null)
+			{
+				isAddrSearch = true;
+				markerLat = cpr.addrMarker.getPosition().lat();
+				markerLng = cpr.addrMarker.getPosition().lng();
 			}
-			$("#numResults").fadeOut(function() {
-				$('#statsResults').fadeOut();
-				$("#numResults").html('<div class="alert alert-info"><strong>' + addCommas(cpr.numRows) + '</strong> Requests Selected</div>');
-			});
-			$("#numResults").fadeIn();
+			else
+			{
+				isAddrSearch = false;
+				cpr.potholeData = dataParam;
+			}
+			numRows = parseInt(cpr.potholeData.data.length);
+			potholeLatLng = Array();
+			cpr.potholeMarkers = Array();
+			potholeText = Array();
+			cpr.potholeInfo = Array();
+			numShown = 0;
+			for (var i=1;i<numRows;i++) {
+				if(isAddrSearch == false || (
+					isAddrSearch == true && 
+					cpr.potholeData.data[i][13][1] != null &&
+					cpr.potholeData.data[i][13][2] != null && (
+						(cpr.potholeData.data[i][13][1] < (markerLat + 0.004)) &&
+						(cpr.potholeData.data[i][13][1] > (markerLat - 0.004)) &&
+						(cpr.potholeData.data[i][13][2] < (markerLng + 0.005)) &&
+						(cpr.potholeData.data[i][13][2] > (markerLng - 0.005))
+					)
+				))
+				{
+					numShown++;
+					potholeLatLng[i] = new google.maps.LatLng(cpr.potholeData.data[i][13][1],cpr.potholeData.data[i][13][2]);
+					date = cpr.potholeData.data[i][8].replace('T00:00:00','');;
+					potholeText[i] = '<div class="infoWindow" style="border:1px solid rgb(188,232,241); margin-top:8px; background:rgb(217,237,247); padding:5px; font-size:80%;">'+
+						cpr.potholeData.data[i][12]+'<br />'+
+						'Ticket: '+cpr.potholeData.data[i][11]+'<br />'+
+						'Created: '+date+'<br /></div>';
+					cpr.potholeMarkers[i] = new google.maps.Marker({
+						position: potholeLatLng[i],
+						map: theMap,
+						icon: 'img/r.png'
+					});
+					potholeInfoBoxOptions = {
+						content: potholeText[i]
+						,disableAutoPan: false
+						,maxWidth: 0
+						,pixelOffset: new google.maps.Size(-140, 0)
+						,zIndex: null
+						,boxStyle: { 
+							background: "url('img/tipbox.gif') no-repeat"
+							,opacity: 0.95
+							,width: "160px"
+						}
+						,closeBoxMargin: "10px 2px 2px 2px"
+						,closeBoxURL: "http://www.google.com/intl/en_us/mapfiles/close.gif"
+						,infoBoxClearance: new google.maps.Size(1, 1)
+						,isHidden: false
+						,pane: "floatPane"
+						,enableEventPropagation: false
+					};
+					cpr.potholeInfo[i] = new InfoBox(potholeInfoBoxOptions);
+					google.maps.event.addListener(cpr.potholeMarkers[i], 'click', cpr.openInfoBox(theMap,cpr.potholeMarkers[i],cpr.potholeInfo[i]));
+				}
+			}
+			cpr.displayCount(numShown);
+		},
+		addressSearch : function() {
+			cpr.theAddress = $("#address").val();
+			if (cpr.theAddress != '' && cpr.theAddress != false)
+			{ 
+				cpr.theAddress += ' Chicago IL';
+				cpr.geocoder.geocode({'address': cpr.theAddress}, function(results, status)
+				{
+					if (status == google.maps.GeocoderStatus.OK)
+					{
+						if(cpr.addrMarker != false)
+						{
+							cpr.addrMarker.setMap(null);
+						}
+						cpr.clearMarkers();
+						theMap.setCenter(results[0].geometry.location);
+						theMap.setZoom(15);
+						cpr.addrMarker = new google.maps.Marker({
+							position: results[0].geometry.location,
+							map: theMap,
+							animation: google.maps.Animation.DROP
+						});
+						cpr.potholeDataHandler(null);
+					}
+					else
+					{
+						alert("We could not locate your address: " + status);
+					}
+				});
+			}
+			else
+			{
+				if(cpr.addrMarker != false)
+				{
+					cpr.addrMarker.setMap(null);
+				}
+			}
+		},
+		clearMarkers : function() {
+			if (cpr.potholeMarkers.length > 0) {
+				for (var i=1; i<cpr.potholeMarkers.length; i++ ) {
+					cpr.potholeMarkers[i].setMap(null);
+					cpr.potholeInfo[i].setMap(null);
+				}
+			}
+
 		}
-		/**
-		 * Query Fusion Tables for data needed to do the pothole statistics
-		 */
-		function displayStatistics(queryString)
+	};
+	// END cpr object
+	var theMap = new google.maps.Map(cpr.mapDOM, cpr.mapOptions);
+	theMap.setCenter(cpr.mapCenter);
+	$.get(cpr.potholeDataURL, cpr.potholeDataHandler, 'jsonp');
+	// Get the Ward Layer
+	cpr.wardLayer = new google.maps.FusionTablesLayer(cpr.wardTableId, {
+		query : "SELECT " + cpr.wardColumn + " FROM " + cpr.wardTableId
+	});
+	// Ward Layer Event Listener
+	$("#wards").click(function() {
+		if ($("#wards").is(':checked')) {
+			cpr.wardLayer.setMap(theMap);
+		} else {
+			cpr.wardLayer.setMap(null);
+		}
+	});
+	// Address Search Form Listener
+	$("#map-refresh").click(cpr.addressSearch);
+	// Map All listener
+	$('#map-all').click(function(){
+		if(cpr.addrMarker != false)
 		{
-			cpr.statQueryString = queryString.replace("SELECT " + cpr.potholeColumn, "SELECT CREATIONDATE, COMPLETIONDATE");
-			//getFTQuery(cpr.statQueryString).send(processStatistics);
-			cpr.queryText = encodeURIComponent(cpr.statQueryString);
-			cpr.jqxhr = $.get('http://www.google.com/fusiontables/api/query?sql='+cpr.queryText+'&jsonCallback=?', ftDataHandler, 'jsonp');
+			cpr.addrMarker.setMap(null);
+			theMap.setCenter(cpr.mapCenter);
+			theMap.setZoom(11);
 		}
-		/**
-		 * Handle the Google Data API request
-		 */
-		function ftDataHandler(d) {
-			processStatistics(d.table.rows);
-		}
-		/**
-		 * Create and display the statistics
-		 */
-		function processStatistics(response)
-		{
-			cpr.dateDiffs = new Array();
-			cpr.numStatsRows = parseInt(response.length);
-			// Set the six ranges value to 0
-			for(cpr.i=1;cpr.i<=6;cpr.i++)
-			{
-				cpr.total[cpr.i] = 0;
-			}
-			for (cpr.i=0;cpr.i<cpr.numStatsRows;cpr.i++)
-			{
-				
-				cpr.createDates[cpr.i] = new XDate(response[cpr.i][0]);
-				if (response[cpr.i][1] != '')
-				{
-					cpr.openComplete = 'DAYS TO COMPLETE REQUESTS';
-					cpr.completeDates[cpr.i] = new XDate(response[cpr.i][1]);
-				}
-				else
-				{
-					cpr.openComplete = 'DAYS SINCE REQUESTS OPENED';
-					cpr.completeDates[cpr.i] = new XDate(cpr.dataDate);
-				}
-				cpr.dateDiffs[cpr.i] = cpr.createDates[cpr.i].diffDays(cpr.completeDates[cpr.i]);
-				if(cpr.dateDiffs[cpr.i] < 3) { cpr.total[1]++; }
-				else if(cpr.dateDiffs[cpr.i] < 6) { cpr.total[2]++; }
-				else if(cpr.dateDiffs[cpr.i] < 9) { cpr.total[3]++; }
-				else if(cpr.dateDiffs[cpr.i] < 12) { cpr.total[4]++; }
-				else if(cpr.dateDiffs[cpr.i] < 15) { cpr.total[5]++; }
-				else { cpr.total[6]++; }
-			}
-			cpr.statResults.min = jStat.min(cpr.dateDiffs);
-			cpr.statResults.max = jStat.max(cpr.dateDiffs);
-			cpr.statResults.mean = jStat.mean(cpr.dateDiffs);
-			cpr.statResults.median = jStat.median(cpr.dateDiffs);
-			cpr.statResults.stdev = jStat.stdev(cpr.dateDiffs);
-			for(cpr.i=1;cpr.i<=6;cpr.i++)
-			{
-				cpr.flot[cpr.i] = [cpr.i,cpr.total[cpr.i]];
-			}
-			$("#statResults").fadeOut(function() {
-				$("#statResults").html('<div class="alert alert-info"><strong>' + cpr.openComplete + '<br/>' + roundNum(cpr.statResults.min,0) + '</strong> minimum<br/><strong>' + roundNum(cpr.statResults.max,0) + '</strong> maximum<br/><strong>' + roundNum(cpr.statResults.mean,0) + '</strong> average<br/><strong>' + roundNum(cpr.statResults.median,0) + '</strong> median<br/><strong>' + roundNum(cpr.statResults.stdev,0) + '</strong> standard deviation<div id="flot" style="width:240px;height:100px"></div><p>&nbsp;<br/>requests - vertical&nbsp;&nbsp;|&nbsp;&nbsp;days - horizonal</p></div>');
-				$.plot($("#flot"), [{ color:"rgba(255,50,50,0.66)", data:cpr.flot}],
-							{
-								bars: { show:true, fillColor:"rgba(255,50,50,0.25)" },
-								xaxis: {
-									ticks: [[1,"0"],[2,"3"],[3,"6"],[4,"9"],[5,"12"],[6,"15"],[7,"&#x221E;"]]
-								}
-							}
-				);
-			});
-			$("#statResults").fadeIn();
-		}
-		/**
-		 * Add commas into numbers
-		 */
-		function addCommas(theStr) {
-			theStr += '';
-			cpr.subStr = theStr.split('.');
-			cpr.subStr1 = cpr.subStr[0];
-			cpr.subStr2 = cpr.subStr.length > 1 ? '.' + cpr.subStr[1] : '';
-			cpr.regx = /(\d+)(\d{3})/;
-			while (cpr.regx.test(cpr.subStr1))
-			{
-				cpr.subStr1 = cpr.subStr1.replace(cpr.regx, '$1' + ',' + '$2');
-			}
-			return cpr.subStr1 + cpr.subStr2;
-		}
-		/**
-		 * Round numbers to the given decimal (dec)
-		 */
-		function roundNum(num, dec) {
-			cpr.roundResult = Math.round(num*Math.pow(10,dec))/Math.pow(10,dec);
-			return cpr.roundResult;
-		}
+		cpr.potholeDataHandler(cpr.potholeData);
+		$('#address').val('');
+	});
 });
