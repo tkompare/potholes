@@ -31,7 +31,7 @@
 					<div class="span4">
 						<div class="row-fluid">
 						<div class=span2">
-						<img src="img/311icon.png" alt="311" style="width:36px;height:36px; padding:4px"/>
+						<img src="img/311icon.png" alt="311" style="width:36px;height:36px; padding:4px;"/>
 						</div>
 						<div class="span9">
 						<h2>Chicago Potholes</h2>
@@ -39,21 +39,20 @@
 						</div>
 						<form>
 						<div class="well">
-						<label for="wards" class="checkbox">
 							<input type="checkbox" id="wards" name="wards"> Show Ward Boundaries</label>
-						</div>
-						<div class="well">
-							<h4>Search</h4> <p>Find potholes reported to Chicago 311 within 1/2 mile of an address that are waiting to be filled.</p>
+							<hr />
+							<h4>Address Search</h4>
+							<p>Find potholes reported to Chicago 311 within 1/2 mile of an address that are waiting to be patched.</p>
 							<label for="address">Chicago Street Address</label>
 							<div class="input-append">
-								<input class="span2" id="address" name="address" type="text" placeholder="ex: 100 N State St" value="" /><span class="add-on">Chicago, IL</span>
+								<input class="span3" id="address" name="address" type="text" placeholder="123 N StreetName" value="" />
 							</div>
 							<button id="map-refresh" type="button" class="btn btn-primary"><i class="icon-refresh icon-white"></i>&nbsp;Run Query</button>
+							<button id="map-all" type="button" class="btn btn-danger"><i class="icon-map-marker icon-white"></i>&nbsp;Clear Query</button>
+							
 							</div>
-							<div id="yearWarn"></div>
-							<div id="numResults">&nbsp;</div>
-							<div id="statResults">&nbsp;</div>
-							<button id="map-all" type="button" class="btn btn-danger"><i class="icon-map-marker icon-white"></i>&nbsp;Show All</button>
+							<div id="numResults"></div>
+							<div id="statResults"></div>
 						</form>
 					</div>
 					<div class="span8">
@@ -72,8 +71,8 @@
 			<div class="alert alert-info">
 				<p>Author: <a href="http://twitter.com/tomkompare">Tom Kompare</a><br />
 				Data Source: <a href="https://data.cityofchicago.org/Service-Requests/311-Service-Requests-Tree-Trims/uxic-zsuj">data.cityofchicago.org</a><br /></p>
-				<p>License: <a rel="license" href="http://creativecommons.org/licenses/by-nc/3.0/us/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-nc/3.0/us/80x15.png" /></a> This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc/3.0/us/">Creative Commons Attribution-NonCommercial 3.0 United States License</a>.</p>
 				<p>The Chicago Department of Transportation (CDOT) oversees the patching of potholes on over 4,000 miles of arterial and residential streets in Chicago.</p>
+				<p>License: <a rel="license" href="http://creativecommons.org/licenses/by-nc/3.0/us/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-nc/3.0/us/80x15.png" /></a> This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc/3.0/us/">Creative Commons Attribution-NonCommercial 3.0 United States License</a>.</p>
 			</div>
 			</div>
 		</div>

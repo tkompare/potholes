@@ -177,6 +177,7 @@ $(document).ready(function() {
 			}
 		},
 		clearMarkers : function() {
+			alert('clearing markers');
 			if (cpr.potholeMarkers.length > 0) {
 				for (var i=1; i<cpr.potholeMarkers.length; i++ ) {
 					cpr.potholeMarkers[i].setMap(null);
@@ -213,5 +214,6 @@ $(document).ready(function() {
 			theMap.setZoom(11);
 		}
 		cpr.potholeDataHandler(cpr.potholeData);
+		$('#address').val('');
 	});
 });
