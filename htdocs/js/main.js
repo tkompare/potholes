@@ -178,7 +178,7 @@ $(document).ready(function() {
 		},
 		clearMarkers : function() {
 			if (cpr.potholeMarkers.length > 0) {
-				for (var i=1; i<cpr.potholeMarkers.length; i++ ) {
+				for (var i in cpr.potholeMarkers) {
 					cpr.potholeMarkers[i].setMap(null);
 					cpr.potholeInfo[i].setMap(null);
 				}
@@ -215,4 +215,8 @@ $(document).ready(function() {
 		cpr.potholeDataHandler(cpr.potholeData);
 		$('#address').val('');
 	});
+	$('#toggle-more').click(function(ev) { 
+		$('#content-more').toggle('fast'); 
+		$('#toggle-more').text(($('#toggle-more').text() == 'Show more') ? 'Show less' : 'Show more');
+	 });
 });
