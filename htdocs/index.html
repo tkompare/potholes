@@ -38,13 +38,17 @@
 							<h2 style="padding-top:5px;">Chicago Potholes</h2>
 						</div>
 						</div>
+						<div class="alert">
+							<a class="close" data-dismiss="alert">×</a>
+							<strong>Warning!</strong> The City of Chicago Data Portal may be down for scheduled maintenance March 17, 2012 - 7:00 PM to 11:30 PM. During this time you may not be able to access pothole data.
+						</div>
+						<form id="theForm" action="index.html">
 						<div class="tabbalbe">
 						<ul class="nav nav-tabs">
 							<li id="tab-home" class="active"><a href="#content-home" data-toggle="tab">Home</a></li>
 							<li id="tab-about"><a href="#content-about" data-toggle="tab">About</a></li>
 							<li id="tab-notes"><a href="#content-notes" data-toggle="tab">Notes</a></li>
 						</ul>
-						<form>
 						<div class="tab-content">
 						<div id="content-home" class="tab-pane active well">
 							<input type="checkbox" id="wards" name="wards">&nbsp;&nbsp;Show Ward Boundaries
@@ -55,7 +59,7 @@
 							<div class="input-append">
 								<input class="span3" id="address" name="address" type="text" placeholder="123 N StreetName" value="" />
 							</div>
-							<button id="map-refresh" type="button" class="btn btn-primary"><i class="icon-refresh icon-white"></i>&nbsp;Run Search</button>
+							<button id="map-refresh" type="submit" class="btn btn-primary"><i class="icon-refresh icon-white"></i>&nbsp;Run Search</button>
 							<button id="map-all" type="button" class="btn btn-danger"><i class="icon-remove-sign icon-white"></i>&nbsp;Clear Search</button>
 						</div>
 						<div id="content-about" class="tab-pane">

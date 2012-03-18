@@ -219,4 +219,7 @@ $(document).ready(function() {
 		$('#content-more').toggle('fast'); 
 		$('#toggle-more').text(($('#toggle-more').text() == 'Show more') ? 'Show less' : 'Show more');
 	 });
+	$("#theForm").submit(function() {
+		return false;
+	});
 });
