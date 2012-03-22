@@ -6,9 +6,9 @@ $(document).ready(function() {
 	var cpr = {
 		/* ===== PROPERTIES ============================= */
 		// Map properties
-		mapDOM : document.getElementById('theMap'), // the DOM object (div) in which to place the Google Map.
-		mapCenter : new google.maps.LatLng('41.845', '-87.669'), //initial center of the map
-		mapOptions : {
+		mDOM : document.getElementById('theMap'), // the DOM object (div) in which to place the Google Map.
+		mCtr : new google.maps.LatLng('41.845', '-87.669'), //initial center of the map
+		mOpt : {
 			zoom : 11,
 			mapTypeControl : true,
 			mapTypeId : google.maps.MapTypeId.TERRAIN,
@@ -21,22 +21,22 @@ $(document).ready(function() {
 			}
 		},
 		// Pot hole properties
-		potholeDataURL : 'http://data.cityofchicago.org/api/views/ktq5-qe3d/rows.json?jsonp=?',
-		potholeMarkers : Array(),
-		potholeInfo : Array(),
-		potholeData : null,
+		pDURL : 'http://data.cityofchicago.org/api/views/ktq5-qe3d/rows.json?jsonp=?',
+		pMkrs : Array(), // pothole Google Markers
+		pInf : Array(), // pothole Info Windows
+		pD : null, // pothole Data
 		// Ward layer properties
-		wardLayer : null, // The Ward boundary map layer
-		wardTableId : '3057562', // The Google Fusion Table ID for Ward Boundary data
-		wardColumn : 'geometry', // The Fusion Table column that holds the Ward location data
-		theAddress : false,
-		geocoder : new google.maps.Geocoder(),
-		addrMarker : false,
+		wLyr : null, // The Ward boundary map layer
+		wTID : '3057562', // The Google Fusion Table ID for Ward Boundary data
+		wCol : 'geometry', // The Fusion Table column that holds the Ward location data
+		addr : false,
+		gcodr : new google.maps.Geocoder(),
+		aMkr : false,
 		/* ===== METHODS =================================== */
 		/**
 		 * Add commas into numbers
 		 */
-		addCommas : function(theStr) {
+		commas : function(theStr) {
 			theStr += '';
 			subStr = theStr.split('.');
 			subStr1 = subStr[0];
@@ -51,12 +51,12 @@ $(document).ready(function() {
 		/**
 		 * Display the pot hole Count
 		 */
-		displayCount : function(rows) {
+		dCnt : function(rows) {
 			$("#numResults").fadeOut(function() {
 				$("#numResults").html('<div class="alert"><strong>Calculating...</strong></div>');
 			});
 			$("#numResults").fadeIn(function() {
-				$("#numResults").html('<div class="alert alert-info"><strong>'+cpr.addCommas(rows)+' Open Requests</strong></div>');
+				$("#numResults").html('<div class="alert alert-info"><strong>'+cpr.commas(rows)+' Open Requests</strong></div>');
 			});
 		},
 		/**
@@ -66,56 +66,56 @@ $(document).ready(function() {
 		 * @param theInfoWindow
 		 * @returns {Function}
 		 */
-		openInfoBox : function(theMap,theMarker,theInfoBox) {
+		oIBx : function(theMap,theMarker,theInfoBox) {
 			return function() { theInfoBox.open(theMap,theMarker); };
 		},
 		/**
 		 * This pot hole data handler
-		 * @param potholeData
+		 * @param pD
 		 */
-		potholeDataHandler : function(dataParam) {
+		pDH : function(dataParam) {
 			if (dataParam == null)
 			{
 				isAddrSearch = true;
-				markerLat = cpr.addrMarker.getPosition().lat();
-				markerLng = cpr.addrMarker.getPosition().lng();
+				markerLat = cpr.aMkr.getPosition().lat();
+				markerLng = cpr.aMkr.getPosition().lng();
 			}
 			else
 			{
 				isAddrSearch = false;
-				cpr.potholeData = dataParam;
+				cpr.pD = dataParam;
 			}
-			numRows = parseInt(cpr.potholeData.data.length);
+			numRows = parseInt(cpr.pD.data.length);
 			potholeLatLng = Array();
-			cpr.potholeMarkers = Array();
+			cpr.pMkrs = Array();
 			potholeText = Array();
-			cpr.potholeInfo = Array();
+			cpr.pInf = Array();
 			numShown = 0;
 			for (var i=1;i<numRows;i++) {
 				if(isAddrSearch == false || (
 					isAddrSearch == true && 
-					cpr.potholeData.data[i][13][1] != null &&
-					cpr.potholeData.data[i][13][2] != null && (
-						(cpr.potholeData.data[i][13][1] < (markerLat + 0.004)) &&
-						(cpr.potholeData.data[i][13][1] > (markerLat - 0.004)) &&
-						(cpr.potholeData.data[i][13][2] < (markerLng + 0.005)) &&
-						(cpr.potholeData.data[i][13][2] > (markerLng - 0.005))
+					cpr.pD.data[i][13][1] != null &&
+					cpr.pD.data[i][13][2] != null && (
+						(cpr.pD.data[i][13][1] < (markerLat + 0.004)) &&
+						(cpr.pD.data[i][13][1] > (markerLat - 0.004)) &&
+						(cpr.pD.data[i][13][2] < (markerLng + 0.005)) &&
+						(cpr.pD.data[i][13][2] > (markerLng - 0.005))
 					)
 				))
 				{
 					numShown++;
-					potholeLatLng[i] = new google.maps.LatLng(cpr.potholeData.data[i][13][1],cpr.potholeData.data[i][13][2]);
-					date = cpr.potholeData.data[i][8].replace('T00:00:00','');;
-					potholeText[i] = '<div class="infoWindow" style="border:1px solid rgb(188,232,241); margin-top:8px; background:rgb(217,237,247); padding:5px; font-size:80%;">'+
-						cpr.potholeData.data[i][12]+'<br />'+
-						'Ticket: '+cpr.potholeData.data[i][11]+'<br />'+
+					potholeLatLng[i] = new google.maps.LatLng(cpr.pD.data[i][13][1],cpr.pD.data[i][13][2]);
+					date = cpr.pD.data[i][8].replace('T00:00:00','');;
+					potholeText[i] = '<div class="infoWindow" style="border:1px solid rgb(0,0,0); margin-top:8px; background:rgb(217,237,247); padding:5px; font-size:80%;">'+
+						cpr.pD.data[i][12]+'<br />'+
+						'Ticket: '+cpr.pD.data[i][11]+'<br />'+
 						'Created: '+date+'<br /></div>';
-					cpr.potholeMarkers[i] = new google.maps.Marker({
+					cpr.pMkrs[i] = new google.maps.Marker({
 						position: potholeLatLng[i],
 						map: theMap,
 						icon: 'img/r.png'
 					});
-					potholeInfoBoxOptions = {
+					pInfBoxOptions = {
 						content: potholeText[i]
 						,disableAutoPan: false
 						,maxWidth: 0
@@ -133,34 +133,34 @@ $(document).ready(function() {
 						,pane: "floatPane"
 						,enableEventPropagation: false
 					};
-					cpr.potholeInfo[i] = new InfoBox(potholeInfoBoxOptions);
-					google.maps.event.addListener(cpr.potholeMarkers[i], 'click', cpr.openInfoBox(theMap,cpr.potholeMarkers[i],cpr.potholeInfo[i]));
+					cpr.pInf[i] = new InfoBox(pInfBoxOptions);
+					google.maps.event.addListener(cpr.pMkrs[i], 'click', cpr.oIBx(theMap,cpr.pMkrs[i],cpr.pInf[i]));
 				}
 			}
-			cpr.displayCount(numShown);
+			cpr.dCnt(numShown);
 		},
-		addressSearch : function() {
-			cpr.theAddress = $("#address").val();
-			if (cpr.theAddress != '' && cpr.theAddress != false)
+		aSrch : function() {
+			cpr.addr = $("#address").val();
+			if (cpr.addr != '' && cpr.addr != false)
 			{ 
-				cpr.theAddress += ' Chicago IL';
-				cpr.geocoder.geocode({'address': cpr.theAddress}, function(results, status)
+				cpr.addr += ' Chicago IL';
+				cpr.gcodr.geocode({'address': cpr.addr}, function(results, status)
 				{
 					if (status == google.maps.GeocoderStatus.OK)
 					{
-						if(cpr.addrMarker != false)
+						if(cpr.aMkr != false)
 						{
-							cpr.addrMarker.setMap(null);
+							cpr.aMkr.setMap(null);
 						}
-						cpr.clearMarkers();
+						cpr.cMkrs();
 						theMap.setCenter(results[0].geometry.location);
 						theMap.setZoom(15);
-						cpr.addrMarker = new google.maps.Marker({
+						cpr.aMkr = new google.maps.Marker({
 							position: results[0].geometry.location,
 							map: theMap,
 							animation: google.maps.Animation.DROP
 						});
-						cpr.potholeDataHandler(null);
+						cpr.pDH(null);
 					}
 					else
 					{
@@ -170,49 +170,49 @@ $(document).ready(function() {
 			}
 			else
 			{
-				if(cpr.addrMarker != false)
+				if(cpr.aMkr != false)
 				{
-					cpr.addrMarker.setMap(null);
+					cpr.aMkr.setMap(null);
 				}
 			}
 		},
-		clearMarkers : function() {
-			if (cpr.potholeMarkers.length > 0) {
-				for (var i in cpr.potholeMarkers) {
-					cpr.potholeMarkers[i].setMap(null);
-					cpr.potholeInfo[i].setMap(null);
+		cMkrs : function() {
+			if (cpr.pMkrs.length > 0) {
+				for (var i in cpr.pMkrs) {
+					cpr.pMkrs[i].setMap(null);
+					cpr.pInf[i].setMap(null);
 				}
 			}
 
 		}
 	};
 	// END cpr object
-	var theMap = new google.maps.Map(cpr.mapDOM, cpr.mapOptions);
-	theMap.setCenter(cpr.mapCenter);
-	$.get(cpr.potholeDataURL, cpr.potholeDataHandler, 'jsonp');
+	var theMap = new google.maps.Map(cpr.mDOM, cpr.mOpt);
+	theMap.setCenter(cpr.mCtr);
+	$.get(cpr.pDURL, cpr.pDH, 'jsonp');
 	// Get the Ward Layer
-	cpr.wardLayer = new google.maps.FusionTablesLayer(cpr.wardTableId, {
-		query : "SELECT " + cpr.wardColumn + " FROM " + cpr.wardTableId
+	cpr.wLyr = new google.maps.FusionTablesLayer(cpr.wTID, {
+		query : "SELECT " + cpr.wCol + " FROM " + cpr.wTID
 	});
 	// Ward Layer Event Listener
 	$("#wards").click(function() {
 		if ($("#wards").is(':checked')) {
-			cpr.wardLayer.setMap(theMap);
+			cpr.wLyr.setMap(theMap);
 		} else {
-			cpr.wardLayer.setMap(null);
+			cpr.wLyr.setMap(null);
 		}
 	});
 	// Address Search Form Listener
-	$("#map-refresh").click(cpr.addressSearch);
+	$("#map-refresh").click(cpr.aSrch);
 	// Map All listener
 	$('#map-all').click(function(){
-		if(cpr.addrMarker != false)
+		if(cpr.aMkr != false)
 		{
-			cpr.addrMarker.setMap(null);
-			theMap.setCenter(cpr.mapCenter);
+			cpr.aMkr.setMap(null);
+			theMap.setCenter(cpr.mCtr);
 			theMap.setZoom(11);
 		}
-		cpr.potholeDataHandler(cpr.potholeData);
+		cpr.pDH(cpr.pD);
 		$('#address').val('');
 	});
 	$('#toggle-more').click(function(ev) { 
