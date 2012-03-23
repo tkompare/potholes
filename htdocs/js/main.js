@@ -69,6 +69,9 @@ $(document).ready(function() {
 		oIBx : function(theMap,theMarker,theInfoBox) {
 			return function() { theInfoBox.open(theMap,theMarker); };
 		},
+		cIBx : function(theMap,theMarker,theInfoBox) {
+			return function() { theInfoBox.close(theMap,theMarker); };
+		},
 		/**
 		 * This pot hole data handler
 		 * @param pD
@@ -134,11 +137,16 @@ $(document).ready(function() {
 						,enableEventPropagation: false
 					};
 					cpr.pInf[i] = new InfoBox(pInfBoxOptions);
+					google.maps.event.addListener(cpr.pMkrs[i], 'mouseover', cpr.oIBx(theMap,cpr.pMkrs[i],cpr.pInf[i]));
 					google.maps.event.addListener(cpr.pMkrs[i], 'click', cpr.oIBx(theMap,cpr.pMkrs[i],cpr.pInf[i]));
+					google.maps.event.addListener(cpr.pMkrs[i], 'mouseout', cpr.cIBx(theMap,cpr.pMkrs[i],cpr.pInf[i]));
 				}
 			}
 			cpr.dCnt(numShown);
 		},
+		/**
+		 * Address Search
+		 */
 		aSrch : function() {
 			cpr.addr = $("#address").val();
 			if (cpr.addr != '' && cpr.addr != false)
@@ -173,9 +181,17 @@ $(document).ready(function() {
 				if(cpr.aMkr != false)
 				{
 					cpr.aMkr.setMap(null);
+					cpr.cMkrs();
+					theMap.setCenter(cpr.mCtr);
+					theMap.setZoom(11);
+					cpr.pDH(cpr.pD);
+					$('#address').val('');
 				}
 			}
 		},
+		/**
+		 * Clear All Markers
+		 */
 		cMkrs : function() {
 			if (cpr.pMkrs.length > 0) {
 				for (var i in cpr.pMkrs) {
@@ -183,7 +199,6 @@ $(document).ready(function() {
 					cpr.pInf[i].setMap(null);
 				}
 			}
-
 		}
 	};
 	// END cpr object
