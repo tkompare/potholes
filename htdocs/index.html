@@ -49,14 +49,14 @@
 						<div id="content-home" class="tab-pane active well">
 							<input type="checkbox" id="wards" name="wards">&nbsp;&nbsp;Show Ward Boundaries
 							<hr />
-							<h4>Search By Address</h4>
+							<h4>Find By Address</h4>
 							<p>Find pothole requests that are not yet patched within a 1/2 mile of an address.</p>
 							<label for="address">Chicago Street Address</label>
 							<div class="input-append">
 								<input class="span3" id="address" name="address" type="text" placeholder="123 N StreetName" value="" />
 							</div>
-							<button id="map-refresh" type="submit" class="btn btn-primary"><i class="icon-refresh icon-white"></i>&nbsp;Run Search</button>
-							<button id="map-all" type="button" class="btn btn-danger"><i class="icon-remove-sign icon-white"></i>&nbsp;Clear Search</button>
+							<button id="map-refresh" type="submit" class="btn btn-primary"><i class="icon-refresh icon-white"></i>&nbsp;Find</button>
+							<button id="map-all" type="button" class="btn btn-danger"><i class="icon-remove-sign icon-white"></i>&nbsp;Reset</button>
 						</div>
 						<div id="content-about" class="tab-pane">
 							<p>I humbly present <strong>Chicago Potholes</strong>, a web application to display and
@@ -131,6 +131,8 @@
 	<script src="https://maps-api-ssl.google.com/maps/api/js?v=3.7&sensor=false" type="text/javascript"></script>
 	<script src="js/bootstrap.min.js"></script>
 	<script type="text/javascript" src="js/infobox.min.js"></script>
+	<script type="text/javascript" src="js/xdate.js"></script>
+	<script type="text/javascript" src="js/jstat.min.js"></script>
 	<script type="text/javascript" src="js/main.js"></script>
 </body>
 </html>

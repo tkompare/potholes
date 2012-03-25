@@ -94,6 +94,7 @@ $(document).ready(function() {
 			potholeText = Array();
 			cpr.pInf = Array();
 			numShown = 0;
+			phDates = new Array();
 			for (var i=1;i<numRows;i++) {
 				if(isAddrSearch == false || (
 					isAddrSearch == true && 
@@ -106,6 +107,7 @@ $(document).ready(function() {
 					)
 				))
 				{
+					phDates[numShown] = new XDate(cpr.pD.data[i][8]);
 					numShown++;
 					potholeLatLng[i] = new google.maps.LatLng(cpr.pD.data[i][13][1],cpr.pD.data[i][13][2]);
 					date = cpr.pD.data[i][8].replace('T00:00:00','');;
@@ -143,6 +145,31 @@ $(document).ready(function() {
 				}
 			}
 			cpr.dCnt(numShown);
+			cpr.doStats(phDates);
+		},
+		doStats : function(dates){
+			dateDiffs = new Array();
+			today = new XDate();
+			for (var i=0; i < dates.length; i++) {
+				dateDiffs[i] = dates[i].diffDays(today);
+			}
+			min = cpr.roundN(jStat.min(dateDiffs),0);
+			max = cpr.roundN(jStat.max(dateDiffs),0);
+			mean = cpr.roundN(jStat.mean(dateDiffs),0);
+			median = cpr.roundN(jStat.median(dateDiffs),0);
+			std = cpr.roundN(jStat.stdev(dateDiffs),0);
+			$("#statResults").fadeOut(function() {
+				$("#statResults").html('<div class="alert alert-info"><strong>Statistics</strong> (days since request)<br><strong>'+min+'</strong> Minimum<br><strong>'+max+'</strong> Maximum<br><strong>'+median+'</strong> Median<br><strong>'+mean+'</strong> Average<br><strong>'+std+'</strong> Standard Deviation</div>');
+			});
+			$("#statResults").fadeIn();
+			//alert(min+','+max+','+mean+','+median+','+std);
+		},
+		/**
+		 * Round numbers to the given decimal (dec)
+		 */
+		roundN: function(num, dec) {
+			var roundResult = Math.round(num*Math.pow(10,dec))/Math.pow(10,dec);
+			return roundResult;
 		},
 		/**
 		 * Address Search
