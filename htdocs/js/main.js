@@ -100,10 +100,10 @@ $(document).ready(function() {
 					isAddrSearch == true && 
 					cpr.pD.data[i][13][1] != null &&
 					cpr.pD.data[i][13][2] != null && (
-						(cpr.pD.data[i][13][1] < (markerLat + 0.004)) &&
-						(cpr.pD.data[i][13][1] > (markerLat - 0.004)) &&
-						(cpr.pD.data[i][13][2] < (markerLng + 0.005)) &&
-						(cpr.pD.data[i][13][2] > (markerLng - 0.005))
+						(cpr.pD.data[i][13][1] < (markerLat + 0.0076)) &&
+						(cpr.pD.data[i][13][1] > (markerLat - 0.0076)) &&
+						(cpr.pD.data[i][13][2] < (markerLng + 0.0098)) &&
+						(cpr.pD.data[i][13][2] > (markerLng - 0.0098))
 					)
 				))
 				{
@@ -159,7 +159,7 @@ $(document).ready(function() {
 			median = cpr.roundN(jStat.median(dateDiffs),0);
 			std = cpr.roundN(jStat.stdev(dateDiffs),0);
 			$("#statResults").fadeOut(function() {
-				$("#statResults").html('<div class="alert alert-info"><strong>Statistics</strong> (days since request)<br><strong>'+min+'</strong> Minimum<br><strong>'+max+'</strong> Maximum<br><strong>'+median+'</strong> Median<br><strong>'+mean+'</strong> Average<br><strong>'+std+'</strong> Standard Deviation</div>');
+				$("#statResults").html('<div class="alert alert-info"><strong>Statistics</strong> (days since request)<br><strong>'+min+'</strong> Minimum<br><strong>'+max+'</strong> Maximum<br><strong>'+median+'</strong> Median<br><strong>'+mean+'</strong> Average<br>&plusmn; <strong>'+std+'</strong> Standard Deviation</div>');
 			});
 			$("#statResults").fadeIn();
 			//alert(min+','+max+','+mean+','+median+','+std);
