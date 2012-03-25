@@ -29,9 +29,11 @@ $(document).ready(function() {
 		wLyr : null, // The Ward boundary map layer
 		wTID : '3057562', // The Google Fusion Table ID for Ward Boundary data
 		wCol : 'geometry', // The Fusion Table column that holds the Ward location data
-		addr : false,
-		gcodr : new google.maps.Geocoder(),
-		aMkr : false,
+		addr : false, // The address
+		gcodr : new google.maps.Geocoder(), // Google Maps Geocoder
+		aMkr : false, // The address marker
+		cwSD : false, // Are the citywide stats done?
+		cwSts : {}, // The citywide stats.
 		/* ===== METHODS =================================== */
 		/**
 		 * Add commas into numbers
@@ -109,17 +111,45 @@ $(document).ready(function() {
 				{
 					phDates[numShown] = new XDate(cpr.pD.data[i][8]);
 					numShown++;
+				}
+			}
+			cpr.dCnt(numShown);
+			cpr.doStats(phDates);
+			for (var i=1;i<numRows;i++) {
+				if(isAddrSearch == false || (
+					isAddrSearch == true && 
+					cpr.pD.data[i][13][1] != null &&
+					cpr.pD.data[i][13][2] != null && (
+						(cpr.pD.data[i][13][1] < (markerLat + 0.0076)) &&
+						(cpr.pD.data[i][13][1] > (markerLat - 0.0076)) &&
+						(cpr.pD.data[i][13][2] < (markerLng + 0.0098)) &&
+						(cpr.pD.data[i][13][2] > (markerLng - 0.0098))
+					)
+				))
+				{
+					date = cpr.pD.data[i][8].replace('T00:00:00','');
+					today = new XDate();
+					thisDate = new XDate(cpr.pD.data[i][8]);
+					thisDateDiff = thisDate.diffDays(today);
+					if(thisDateDiff < cpr.cwSts.mean) {
+						theIcon = 'img/b.png';
+					}
+					else if (thisDateDiff >= cpr.cwSts.mean && thisDateDiff <= cpr.cwSts.mstd) {
+						theIcon = 'img/o.png';
+					}
+					else {
+						theIcon = 'img/r.png';
+					}
 					potholeLatLng[i] = new google.maps.LatLng(cpr.pD.data[i][13][1],cpr.pD.data[i][13][2]);
-					date = cpr.pD.data[i][8].replace('T00:00:00','');;
-					potholeText[i] = '<div class="infoWindow" style="border:1px solid rgb(0,0,0); margin-top:8px; background:rgb(217,237,247); padding:5px; font-size:80%;">'+
-						cpr.pD.data[i][12]+'<br />'+
-						'Ticket: '+cpr.pD.data[i][11]+'<br />'+
-						'Created: '+date+'<br /></div>';
 					cpr.pMkrs[i] = new google.maps.Marker({
 						position: potholeLatLng[i],
 						map: theMap,
-						icon: 'img/r.png'
+						icon: theIcon
 					});
+					potholeText[i] = '<div class="infoBox" style="border:1px solid rgb(0,0,0); margin-top:8px; background:rgb(217,237,247); padding:5px; font-size:80%;">'+
+						cpr.pD.data[i][12]+'<br />'+
+						'Ticket: '+cpr.pD.data[i][11]+'<br />'+
+						'Created: '+date+'<br /></div>';
 					pInfBoxOptions = {
 						content: potholeText[i]
 						,disableAutoPan: false
@@ -144,8 +174,6 @@ $(document).ready(function() {
 					google.maps.event.addListener(cpr.pMkrs[i], 'mouseout', cpr.cIBx(theMap,cpr.pMkrs[i],cpr.pInf[i]));
 				}
 			}
-			cpr.dCnt(numShown);
-			cpr.doStats(phDates);
 		},
 		doStats : function(dates){
 			dateDiffs = new Array();
@@ -158,6 +186,14 @@ $(document).ready(function() {
 			mean = cpr.roundN(jStat.mean(dateDiffs),0);
 			median = cpr.roundN(jStat.median(dateDiffs),0);
 			std = cpr.roundN(jStat.stdev(dateDiffs),0);
+			if (cpr.cwSD == false) {
+				cpr.cwSts.mean = mean;
+				cpr.cwSts.mstd = mean + std;
+				$('#below').html('Less than '+cpr.cwSts.mean+' days old');
+				$('#above').html(mean+' to '+cpr.cwSts.mstd+' days old');
+				$('#outside').html('Greater than '+cpr.cwSts.mstd+' days old');
+				cpr.cwSD = true;
+			}
 			$("#statResults").fadeOut(function() {
 				$("#statResults").html('<div class="alert alert-info"><strong>Statistics</strong> (days since request)<br><strong>'+min+'</strong> Minimum<br><strong>'+max+'</strong> Maximum<br><strong>'+median+'</strong> Median<br><strong>'+mean+'</strong> Average<br>&plusmn; <strong>'+std+'</strong> Standard Deviation</div>');
 			});
