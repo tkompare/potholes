@@ -134,7 +134,7 @@ $(document).ready(function() {
 						map: theMap,
 						icon: theIcon
 					});
-					potholeText[i] = '<div class="infoBox" style="border:1px solid rgb(0,0,0); margin-top:8px; background:rgb(217,237,247); padding:5px; font-size:80%;">'+
+					potholeText[i] = '<div class="infoBox" style="border:1px solid rgb(0,0,0); margin-top:8px; background:rgb(255,207,207); padding:5px; font-size:80%;">'+
 						cpr.pD.data[i][12]+'<br />'+
 						'Ticket: '+cpr.pD.data[i][11]+'<br />'+
 						'Created: '+date+'<br /></div>';
