@@ -51,17 +51,6 @@ $(document).ready(function() {
 			return subStr1 + subStr2;
 		},
 		/**
-		 * Display the pot hole Count
-		 */
-		dCnt : function(rows) {
-			$("#numResults").fadeOut(function() {
-				$("#numResults").html('<div class="alert"><strong>Calculating...</strong></div>');
-			});
-			$("#numResults").fadeIn(function() {
-				$("#numResults").html('<div class="alert alert-info"><strong>'+cpr.commas(rows)+' Open Requests</strong></div>');
-			});
-		},
-		/**
 		 * Factory method to open info boxes
 		 * @param theMap
 		 * @param theMarker
@@ -113,7 +102,6 @@ $(document).ready(function() {
 					numShown++;
 				}
 			}
-			cpr.dCnt(numShown);
 			cpr.doStats(phDates);
 			for (var i=1;i<numRows;i++) {
 				if(isAddrSearch == false || (
@@ -135,7 +123,7 @@ $(document).ready(function() {
 						theIcon = 'img/b.png';
 					}
 					else if (thisDateDiff >= cpr.cwSts.mean && thisDateDiff <= cpr.cwSts.mstd) {
-						theIcon = 'img/o.png';
+						theIcon = 'img/p.png';
 					}
 					else {
 						theIcon = 'img/r.png';
@@ -195,7 +183,7 @@ $(document).ready(function() {
 				cpr.cwSD = true;
 			}
 			$("#statResults").fadeOut(function() {
-				$("#statResults").html('<div class="alert alert-info"><strong>Statistics</strong> (days since request)<br><strong>'+min+'</strong> Minimum<br><strong>'+max+'</strong> Maximum<br><strong>'+median+'</strong> Median<br><strong>'+mean+'</strong> Average<br>&plusmn; <strong>'+std+'</strong> Standard Deviation</div>');
+				$("#statResults").html('<div class="well"><strong>'+cpr.commas(dates.length)+'&nbsp;Open Requests<br><br>Statistics</strong> (days since request)<br><strong>'+min+'</strong> Minimum<br><strong>'+max+'</strong> Maximum<br><strong>'+median+'</strong> Median<br><strong>'+mean+'</strong> Average<br><strong>&plusmn;'+std+'</strong> Standard Deviation</div>');
 			});
 			$("#statResults").fadeIn();
 			//alert(min+','+max+','+mean+','+median+','+std);

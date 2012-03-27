@@ -46,41 +46,48 @@
 							<li id="tab-notes"><a href="#content-notes" data-toggle="tab">Notes</a></li>
 						</ul>
 						<div class="tab-content">
-						<div id="content-home" class="tab-pane active well">
-							<input type="checkbox" id="wards" name="wards">&nbsp;&nbsp;Show Ward Boundaries
-							<hr />
-							<h4>Find By Address</h4>
-							<p>Find pothole requests that are not yet patched within a 1/2 mile of an address.</p>
-							<label for="address">Chicago Street Address</label>
-							<div class="input-append">
-								<input class="span3" id="address" name="address" type="text" placeholder="123 N StreetName" value="" />
+						<div id="content-home" class="tab-pane active">
+							<div class="well">
+								<input type="checkbox" id="wards" name="wards">&nbsp;&nbsp;Show Ward Boundaries
+								<hr />
+								<h4>Find By Address</h4>
+								<p>Find pothole requests that are not yet patched within a 1/2 mile of an address.</p>
+								<label for="address">Chicago Street Address</label>
+								<div class="input-append">
+									<input class="span3" id="address" name="address" type="text" placeholder="123 N StreetName" value="" />
+								</div>
+								<button id="map-refresh" type="submit" class="btn btn-primary"><i class="icon-search icon-white"></i>&nbsp;Find</button>
+								<button id="map-all" type="button" class="btn btn-danger"><i class="icon-remove-sign icon-white"></i>&nbsp;Reset</button>
 							</div>
-							<button id="map-refresh" type="submit" class="btn btn-primary"><i class="icon-refresh icon-white"></i>&nbsp;Find</button>
-							<button id="map-all" type="button" class="btn btn-danger"><i class="icon-remove-sign icon-white"></i>&nbsp;Reset</button>
+							<div id="statResults"></div>
 						</div>
 						<div id="content-about" class="tab-pane">
-							<p>I humbly present <strong>Chicago Potholes</strong>, a web application to display and
+							<p>Presenting <strong>Chicago Potholes</strong>; a web application to display and
 							search all Chicago 311 reported pothole patch requests that are
 							awaiting service. Included, is a simple address search for all
 							yet-to-be-serviced pothole repair requests within 1/2 mile of the
 							given address.<br><br><strong>Chicago Potholes</strong> is friendly to most modern desktop,
 							tablet, and smart phone browsers. I've tested on every modern desktop
-							and mobile device browser I could get my hands on.<br><br>Cheers.<br></p>
+							and mobile device browser I could get my hands on.<br><br>You may also follow the link
+							at the bottom of the map to the City of Chicago's web site to submit your own pothole
+							repair request.<br><br>Cheers and enjoy.<br><br>&mdash;<em>Tom Kompare</em></p>
 						</div>
 						<div id="content-notes" class="tab-pane">
 							<ul>
 							<li>All pothole data used for this site is pulled directly from the
 							City of Chicago Data Portal, using its publicly exposed Socrata Open
-							Data API 1.0.</li>
+							Data API (SODA) version 1.0.</li>
 							<li>There is no server-side processing code such as PHP, Ruby, or
 							Python. All business logic and glue code is written in Javascript.</li>
-							<li>The Ward boundary layer is stored in a Google Fusion Data Table.</li>
+							<li>The Ward boundary layer is stored in a Google Fusion Table.</li>
 							</ul>
 							Code libraries used:<br>
 							<ul>
-							<li>Twitter Bootstrap v2.0.2</li>
-							<li>jQuery v1.7.1</li>
-							<li>Google Maps Javascript API v3.0</li>
+							<li><a href="http://twitter.github.com/bootstrap/index.html">Twitter Bootstrap v2.0.2</a></li>
+							<li><a href="http://jquery.com">jQuery v1.7.1</a></li>
+							<li><a href="https://developers.google.com/maps/documentation/javascript/">Google Maps Javascript API v3.0</a></li>
+							<li><a href="http://arshaw.com/xdate/">XDate</a></li>
+							<li><a href="http://www.jstat.org/">jStat</a></li>
 							</ul>
 							<p><a id="toggle-more">Show more</a></p>
 							<div id="content-more" style="display:none;">
@@ -91,16 +98,15 @@
 								<li>Inclusion of historical pothole data</li>
 								<li>Map cave-ins versus pot hole patchings</li>
 								<li>Data visualizations. Yet to be determined</li>
-								<li>Basic statistical analysis of pothole requests</li>
+								<li>Ward-level statistics</li>
 								</ul>
 								<p>If you have any questions, let me know and I'll try
-								to answer the best I can. Comments and Criticisms are welcome too.</p>
+								to answer the best I can. Comments and criticisms are welcome too.
+								Contact me via the Twitterz <a href="https://twitter.com/tomkompare">@tomkompare</a></p>
 							</div>
 						</div>
 						</div>
 						</div>
-						<div id="numResults"></div>
-						<div id="statResults"></div>
 						</form>
 					</div>
 					<div class="span8">
@@ -110,7 +116,7 @@
 								<img src="img/b.png" alt="blue dot"/> <span id="below"></span>
 							</div>
 							<div class="span4">
-								<img src="img/o.png" alt="orange dot"/> <span id="above"></span>
+								<img src="img/p.png" alt="purple dot"/> <span id="above"></span>
 							</div>
 							<div class="span4">
 								<img src="img/r.png" alt="red dot"/> <span id="outside"></span>
@@ -122,6 +128,9 @@
 								<div id="theMap" style="position:absolute; top:0; bottom:0; left:0;right:0;"></div>
 							</div>
 						</div>
+						<div class="well">
+							<a href="https://servicerequest.cityofchicago.org/web_intake_chic/Controller?op=locform&invSRType=PHF&invSRDesc=Street%20Pot%20Hole&locreq=Y">Go to the City of Chicago web site to request a pothole repair.</a> <i class="icon-share-alt" alt="This is a link to another web site."></i>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -129,12 +138,12 @@
 		<div class="row-fluid">
 			<div class="span12">
 			<hr />
-			<div class="alert alert-info">
+			<footer>
 				<p>Author: <a href="http://twitter.com/tomkompare">Tom Kompare</a><br />
 				Data Source: <a href="https://data.cityofchicago.org/Service-Requests/311-Service-Requests-Pot-Holes-Reported/7as2-ds3y">data.cityofchicago.org</a><br /></p>
 				<p>The Chicago Department of Transportation (CDOT) oversees the patching of potholes on over 4,000 miles of arterial and residential streets in Chicago.</p>
 				<p>This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc/3.0/us/">Creative Commons Attribution-NonCommercial 3.0 United States License</a>. <a rel="license" href="http://creativecommons.org/licenses/by-nc/3.0/us/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-nc/3.0/us/80x15.png" /></a></p>
-			</div>
+			</footer>
 			</div>
 		</div>
 	</div>
@@ -146,6 +155,6 @@
 	<script type="text/javascript" src="js/infobox.min.js"></script>
 	<script type="text/javascript" src="js/xdate.js"></script>
 	<script type="text/javascript" src="js/jstat.min.js"></script>
-	<script type="text/javascript" src="js/main.min.js"></script>
+	<script type="text/javascript" src="js/main.js"></script>
 </body>
 </html>
