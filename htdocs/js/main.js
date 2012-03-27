@@ -120,13 +120,13 @@ $(document).ready(function() {
 					thisDate = new XDate(cpr.pD.data[i][8]);
 					thisDateDiff = thisDate.diffDays(today);
 					if(thisDateDiff < cpr.cwSts.mean) {
-						theIcon = 'img/b.png';
+						theIcon = 'img/l.png';
 					}
 					else if (thisDateDiff >= cpr.cwSts.mean && thisDateDiff <= cpr.cwSts.mstd) {
-						theIcon = 'img/p.png';
+						theIcon = 'img/b.png';
 					}
 					else {
-						theIcon = 'img/r.png';
+						theIcon = 'img/d.png';
 					}
 					potholeLatLng[i] = new google.maps.LatLng(cpr.pD.data[i][13][1],cpr.pD.data[i][13][2]);
 					cpr.pMkrs[i] = new google.maps.Marker({
